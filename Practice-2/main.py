@@ -21,14 +21,21 @@ def SecondTask(x,y,z):
     
     if denumerator == 0:
         print("Деление на ноль!")
-        return -1
+        return None
    
     return round(numerator/denumerator, 3)
 
 def ThirdTask(R1, R2):
+    if not(R1>0 and R2>0):
+        print("Значения(е) были(о) отрицательны(ое)")
+        return None
     return round(R1+R2, 1)
+        
 
 def FourthTask(a, b):
+
+    a = abs(a)
+    b = abs(b)
 
     def Findres(a):
 
@@ -49,7 +56,7 @@ def FourthTask(a, b):
 def FifthTask(minutes):
     
     full_hours = minutes // 60
-    count_of_mins = minutes - (full_hours * 60)
+    count_of_mins = minutes % 60
 
     return [full_hours, count_of_mins]
 
@@ -86,11 +93,11 @@ while ch != 0:
         
         case 2:
             x, y, z = map(int, input("Введите x y z (чз пробел)\n> ").split())
-            print(f"Полученное значение: ${SecondTask(x,y,z)}")
+            print(f"Полученное значение: {SecondTask(x,y,z)}")
 
         case 3:
             R1, R2 = map(float, input("Введите a b (чз пробел)\n> ").split())
-            print(f"Полученное сопротивление: ${ThirdTask(R1, R2)}")
+            print(f"Полученное сопротивление: {ThirdTask(R1, R2)}")
 
         case 4:
             a, b = map(int, input("Введите 2-значное и 3-значное (чз пробел)\n> ").split())
@@ -99,7 +106,7 @@ while ch != 0:
         case 5:
             min = int(input("Введите кол-во минут\n> "))
             res = FifthTask(min)
-            print(f"Полных часов: ${res[0]}\nколичество минут, \nпрошедших с момента начала\n последнего часа: ${res[1]}")
+            print(f"Полных часов: {res[0]}\nколичество минут, \nпрошедших с момента начала\n последнего часа: ${res[1]}")
 
         case 6:
             a, b, c = map(float, input("Введите a b c квадратного уравнения (чз пробел)\n> ").split())
