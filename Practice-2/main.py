@@ -4,9 +4,9 @@ def FirstTask(a, b):
     print("a + b =", a+b)
     print("a - b =", a-b)
     print("a * b =", a*b)
-    print("a / b =", a/b)
+    print("a / b =", round(a/b, 2))
     print("a // b =", a//b)
-    print("a '%' b =", a%b)
+    print("a '%' b =", round(a%b, 2))
     print("a**b =", a**b)
     print("a < b =", a<b)
     print("a <= b", a<=b)
@@ -17,45 +17,63 @@ def FirstTask(a, b):
 
 def SecondTask(x,y,z):    
     numerator = pow(((x**5)+9)/(fabs(-8) * y), 1/3)
-    denumerator = 7 - z*modf(y)
+    denumerator = 7 - z*(y % 1)
+    
+    if denumerator == 0:
+        print("Деление на ноль!")
+        return -1
+   
     return round(numerator/denumerator, 3)
 
 def ThirdTask(R1, R2):
     return round(R1+R2, 1)
 
 def FourthTask(a, b):
+
     def Findres(a):
-        sum = 0, pr = 1
+
+        sum = 0
+        pr = 1
+
         for i in f"{a}":
             sum+=int(i)
             pr*=int(i)
         return [sum, pr]
+    
     A = Findres(a)
     B = Findres(b)
+
     print(f"{a}-->{A[0]}-->{A[1]}")
     print(f"{b}-->{B[0]}-->{B[1]}")
 
 def FifthTask(minutes):
+    
     full_hours = minutes // 60
     count_of_mins = minutes - (full_hours * 60)
 
     return [full_hours, count_of_mins]
 
 def SixthTask(a, b, c, m, n):
+    
     D = (b**2) - 4*a*c
+    
     if D < 0:
-        return 0
-    elif D > 0:
-        res = [(-b + sqrt(D))/2*a, (-b - sqrt(D))/2*a]
-        if (m <= res[0] <= n)and(m <= res[1] <= n):
-            return 0
-    elif m <= (-b/2*a) <= n:
-        return 1  
-    return 0
+        return False
+        
+    elif D == 0:
+        x = -b / (2*a)
+        return m <= x <= n
+        
+    else:
+        x1 = (-b + sqrt(D)) / (2*a)
+        x2 = (-b - sqrt(D)) / (2*a)
+        return (m <= x1 <= n) or (m <= x2 <= n)
+
 
 
 
 ch = 1
+
 while ch != 0:
     
     ch = int(input("Выберите задание (1 - 6, 0 - выход)\n> "))
