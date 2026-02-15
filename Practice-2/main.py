@@ -17,7 +17,7 @@ def FirstTask(a, b):
 
 def SecondTask(x,y,z):    
     numerator = pow(((x**5)+9)/(fabs(-8) * y), 1/3)
-    denumerator = 7 - z*(y % 1)
+    denumerator = 7 - z % y
     
     if denumerator == 0:
         print("Деление на ноль!")
@@ -65,7 +65,7 @@ def SixthTask(a, b, c, m, n):
     D = (b**2) - 4*a*c
     
     if D < 0:
-        return False
+        return None
         
     elif D == 0:
         x = -b / (2*a)
@@ -106,7 +106,7 @@ while ch != 0:
         case 5:
             min = int(input("Введите кол-во минут\n> "))
             res = FifthTask(min)
-            print(f"Полных часов: {res[0]}\nколичество минут, \nпрошедших с момента начала\n последнего часа: ${res[1]}")
+            print(f"Полных часов: {res[0]}\nколичество минут, \nпрошедших с момента начала\n последнего часа: {res[1]}")
 
         case 6:
             a, b, c = map(float, input("Введите a b c квадратного уравнения (чз пробел)\n> ").split())
