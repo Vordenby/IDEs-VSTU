@@ -61,15 +61,18 @@ def first_task():
     print(f'Максимум: {c_max}, Минимум: {c_min}')
 
 def second_task(lst):
-    
+    new_lst = []
     mx_str = max([len(x) for x in lst])
-    
     for i in lst:
         d = len(i)
-        while d < mx_str:
-            i += '_'
-            d +=1
-    print("Итоговый список строк: ", lst)
+        if d < mx_str:
+            while d < mx_str:
+                i += '_'
+                d +=1
+            new_lst.append(i)
+        else:
+            new_lst.append(i)
+    print("Итоговый список строк: ", new_lst)
 
 
 first_task()
