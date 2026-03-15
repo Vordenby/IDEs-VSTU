@@ -18,27 +18,17 @@ def First_Task(cort):
         print(tuple(cort))
 
 def Second_Task(cort, el):
-    f_ind = -1
-    for i in range(len(cort)):
-        if cort[i] == el:
-            f_ind = i
-            break
-    if f_ind != -1:
-        s_ind = -1
-        for i in range(i+1, len(cort)):
-            if cort[i] == el:
-                s_ind = i
-        
-        if s_ind != -1:
-            print(cort[f_ind:s_ind])
-
-        else:
-            print(cort[f_ind:])
+    ind = [i for i in range(len(cort)) if cort[i] == el]
+    if len(ind) == 0:
+        print(())
+    elif len(ind) == 1:
+        print(cort[ind[0]:])
     else:
-        print(tuple())
+        print(cort[ind[0]:ind[1]+1])
 
 def Third_Task(arr):
-    print(f"Множество: {set(arr)}, мощность: {len(set(arr))}")
+    res = set(arr)
+    print(f"Множество: {res}, мощность: {len(res)}.")
 
 def Fourth_Task(arr):
     from collections.abc import Hashable
@@ -47,22 +37,25 @@ def Fourth_Task(arr):
 
 n = 1
 while n != 0:
-    n = int(input("Введите номер задания (1-4, 0 - выход)\n> "))
+    n = int(input("Введите номер задания (1-4, 0 - выход).\n> "))
     
     match n:
         case 0:
             pass
         case 1:
-            numbers = input("Введите элементы кортежа ч-з пробел\n> ").strip()
-            numbers = numbers.split()
+            numbers = input("Введите элементы кортежа ч-з пробел.\n> ").strip().split()
             First_Task(numbers)
 
         case 2:
-            numbers = input("Введите элементы кортежа ч-з пробел\n> ").strip()
-            element = input("Введите требуемый элемента для среза\n>")
-            numbers = numbers.split()
+            numbers = input("Введите элементы кортежа ч-з пробел.\n> ").strip().split()
+            element = input("Введите требуемый элемента для среза.\n>")
             Second_Task(tuple(n for n in numbers), element)
 
         case 3:
-            inp = input("Введите строку/числа (чз пробел)\n> ").strip().split()
+            inp = input("Введите строку/числа ч-з пробел.\n> ").strip().split()
+            Third_Task(inp)
+        case 4:
+            inp = input("Введите элементы ч-з пробел.\n> ").strip().split()
             Fourth_Task(inp)
+        case _:
+            print("Выбран неверный вариант.")
