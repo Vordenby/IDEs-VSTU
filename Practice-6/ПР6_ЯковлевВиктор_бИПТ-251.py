@@ -6,7 +6,8 @@ info["место_рождения"] = "Старый Оскол"
 
 print(info)
 
-hobbies = ["Фотоохота, Программирование, Игры, Шахматы, Чтение"]
+hobbies = ["фотоохота", "игры", "шахматы", "чтение"]
+hobbies.append("программирование")
 pets = ["кошка Плюша", "собака Валли", "собака Марта"]
 
 info["хобби"] = hobbies
@@ -35,26 +36,21 @@ iau["МТУСИ"] = 190
 
 info["ВУЗы"] = iau
 
-print("\nДанные:", info)
+print("\n Данные: ", info)
 print("\nПредметы:", sorted(info["ЕГЭ"].keys()))
 print("\nВУЗы:", sorted(info["ВУЗы"].keys()))
 
 print("\nОтветы на вопросы\n")
 name = info["фио"][7:14]
 
-starts_with_vowel = name[0].lower() in "аеёийоуэюя"
-
-print("* мое имя начинается на гласную букву:", starts_with_vowel)
+print("* мое имя начинается на гласную букву:", name[0].lower() in "аеёийоуэюя")
 
 month = info["дата_рождения"][3:5]
 
-born_in_winter_or_summer = int(month) in [6, 7, 8, 12, 1, 2]
+print("* родился летом или зимой:", int(month) in [6, 7, 8, 12, 1, 2])
 
-print("* родился летом или зимой:", born_in_winter_or_summer)
 
-hobbies_count = len(hobbies)
-
-print("* у меня {} хобби, первое {}".format(hobbies_count, hobbies[0]))
+print("* у меня {} хобби, первое - {}".format(len(hobbies), hobbies[0]))
 
 print("* после окончания школы сдавал {} экз.".format(len(Ege)))
 
@@ -68,4 +64,3 @@ max_mark = max([Ege[x] for x in Ege])
 print("* макс. балл = {}".format(max_mark))
 
 print("* всего ВУЗов, в которые я прохожу: {}\n".format(len([x for x in iau if iau[x] <= sum_mark])))
-
