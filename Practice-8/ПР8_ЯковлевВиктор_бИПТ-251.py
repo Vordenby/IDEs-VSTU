@@ -26,4 +26,10 @@ def ceasar(text, shift):
     
     return result
 
-
+# Задание 2
+def power(x, y=2):
+    """Вернуть x^y."""
+    if y == 0:
+        return 1
+    else:
+        return x * power(x, y - 1)
