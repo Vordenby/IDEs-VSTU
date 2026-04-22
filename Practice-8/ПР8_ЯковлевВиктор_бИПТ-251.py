@@ -15,7 +15,7 @@ class PaymentError(Exception):
 
 
 def caesar(text: str, shift: int) -> str:
-    """Возвращает измененную строку text со сдвигом shift по русскому алфавиту."""
+
     lower = [chr(i) for i in range(ord("а"), ord("я") + 1)]
     upper = [chr(i) for i in range(ord("А"), ord("Я") + 1)]
 
@@ -32,7 +32,6 @@ def caesar(text: str, shift: int) -> str:
 
 
 def power(x, y=2):
-    """Вернуть x^y."""
     if not isinstance(y, int):
         raise TypeError("Показатель степени должен быть целым числом.")
     if y == 0:
@@ -140,14 +139,12 @@ def task4() -> None:
 
 
 def print_accounts(accounts: Dict[str, int]) -> None:
-    """Печать аккаунтов."""
     print("Список клиентов ({}): ".format(len(accounts)))
     for i, (name, value) in enumerate(accounts.items(), start=1):
         print("{}. {} {}".format(i, name, value))
 
 
 def transfer_money(accounts: Dict[str, int], account_from: str, account_to: str, value: int) -> None:
-    """Выполнить перевод value денег со счета account_from на account_to."""
     snapshot = accounts.copy()
 
     try:
