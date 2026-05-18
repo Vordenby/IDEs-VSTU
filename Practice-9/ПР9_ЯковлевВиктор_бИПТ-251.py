@@ -8,6 +8,9 @@ def local_path(filename):
     return os.path.join(SCRIPT_DIR, filename)
 
 
+import csv
+
+
 class NoSuchCountryError(Exception):
     def __init__(self, message):
         super().__init__(message)
@@ -22,57 +25,52 @@ class NoSuchFieldError(Exception):
         super().__init__(message)
 
 
+def _parse_number(value: str) -> float:
+    value = value.strip().replace("\xa0", "").replace(" ", "")
+    if "," in value and "." not in value:
+        value = value.replace(",", ".")
+    else:
+        value = value.replace(",", "")
+    return float(value)
+
+
 def load_data(filename):
-    with open(filename, encoding="utf-8", newline="") as f:
-        reader = csv.DictReader(f)
-        data = []
-        if reader.fieldnames is None:
-            return data
+    with open(local_path(filename), encoding="utf-8-sig", newline="") as f:
+        rows = list(csv.reader(f))
 
-        for row in reader:
-            if not row:
+    header_idx = next(
+        (i for i, row in enumerate(rows) if row and row[0].strip() == "Country Name"),
+        None,
+    )
+    if header_idx is None:
+        return []
+
+    header = rows[header_idx]
+    data = []
+
+    for row in rows[header_idx + 1:]:
+        if not row or not any(cell.strip() for cell in row):
+            continue
+
+        if len(row) < len(header):
+            row = row + [""] * (len(header) - len(row))
+
+        country = row[0].strip()
+        if not country:
+            continue
+
+        gdp = None
+        for cell in reversed(row[4:]):
+            cell = cell.strip()
+            if not cell:
                 continue
-
-            keys = [key for key in row.keys() if key]
-            if not keys:
-                continue
-
-            # Определение ключа для названия страны
-            name_key = next(
-                (key for key in keys if key.strip().lower() in
-                 ("country name", "country", "name", "countryname")),
-                keys[0],
-            )
-
-            # Определение ключа для ВВП - выбираем последний числовой ключ
-            gdp_key = None
-            numeric_keys = [
-                key for key in keys
-                if key.strip().lower() not in (
-                    "country", "country name", "name", "countryname",
-                    "series name", "series code", "country code",
-                    "indicator name", "indicator code",
-                )
-            ]
-            if numeric_keys:
-                gdp_key = numeric_keys[-1]
-            elif len(keys) > 1:
-                gdp_key = keys[-1]
-            else:
-                gdp_key = keys[0]
-
-            country = row.get(name_key, "").strip()
-            gdp_value = row.get(gdp_key, "").strip()
-            
-            # Пропускаем строки с отсутствующими значениями
-            if not country or not gdp_value:
-                continue
-
             try:
-                gdp = float(gdp_value.replace(',', '.'))
+                gdp = _parse_number(cell)
+                break
             except ValueError:
                 continue
 
+        if gdp is not None:
             data.append({"name": country, "gdp": gdp})
 
     return data
@@ -82,23 +80,22 @@ def search(data, criteria):
     if not data:
         raise NoSuchCountryError("Данные не содержат стран с известным ВВП.")
 
-    # Определение операции
     if criteria == "-max-":
         return max(data, key=lambda item: item["gdp"])
-    elif criteria == "-min-":
+    if criteria == "-min-":
         return min(data, key=lambda item: item["gdp"])
-    else:
-        # Поиск по названию страны
-        for item in data:
-            if item["name"].lower() == criteria.lower():
-                return item
 
-        raise NoSuchCountryError(
-            "Значение параметра 'criteria' может быть "
-            "одним из:\n"
-            '- "-max-": государство с максимальным ВВП на душу населения;\n'
-            '- "-min-": государство с мнимальным ВВП на душу населения;\n'
-            '- "Russian Federation": название государства.')
+    for item in data:
+        if item["name"].lower() == criteria.lower():
+            return item
+
+    raise NoSuchCountryError(
+        "Значение параметра 'criteria' может быть "
+        "одним из:\n"
+        '- "-max-": государство с максимальным ВВП на душу населения;\n'
+        '- "-min-": государство с минимальным ВВП на душу населения;\n'
+        '- "Russian Federation": название государства.'
+    )
 
 
 def save_data(filename, data, criteria):
@@ -108,49 +105,75 @@ def save_data(filename, data, criteria):
         raise IllegalArgumentError(
             "Значение параметра 'criteria' может быть "
             "одним из:\n"
-            '- "top=X": первые X государств по ВВП на душу населения'
-            ' (целое число > 0, по убыванию значения);\n'
-            '- "tail=X": последние X государств по ВВП на душу населения'
-            ' (целое число > 0, по возрастанию значения);\n'
-            '- "greater=X": список государств с ВВП на душу населения, больше'
-            ' чем X (вещ. число, по убыванию значения);\n'
-            '- "less=X": список государств с ВВП на душу населения, меньше'
-            ' чем X (вещ. число, по возрастанию значения).')
+            '- "top=X": первые X государств по ВВП на душу населения '
+            '(целое число > 0, по убыванию значения);\n'
+            '- "tail=X": последние X государств по ВВП на душу населения '
+            '(целое число > 0, по возрастанию значения);\n'
+            '- "greater=X": список государств с ВВП на душу населения, больше '
+            'чем X (вещественное число, по убыванию значения);\n'
+            '- "less=X": список государств с ВВП на душу населения, меньше '
+            'чем X (вещественное число, по возрастанию значения).'
+        )
 
-    filtered_data = []
-    
-    # Определение операции
+    method = method.strip()
+    value = value.strip()
+
     if method == "top":
-        limit = int(value)
+        try:
+            limit = int(value)
+        except ValueError:
+            raise IllegalArgumentError("top должен быть целым числом > 0")
         if limit <= 0:
-            raise ValueError("Значение должно быть > 0")
+            raise IllegalArgumentError("top должен быть целым числом > 0")
         filtered_data = sorted(data, key=lambda item: item["gdp"], reverse=True)[:limit]
+
     elif method == "tail":
-        limit = int(value)
+        try:
+            limit = int(value)
+        except ValueError:
+            raise IllegalArgumentError("tail должен быть целым числом > 0")
         if limit <= 0:
-            raise ValueError("Значение должно быть > 0")
+            raise IllegalArgumentError("tail должен быть целым числом > 0")
         filtered_data = sorted(data, key=lambda item: item["gdp"])[:limit]
+
     elif method == "greater":
-        threshold = float(value)
+        try:
+            threshold = float(value)
+        except ValueError:
+            raise IllegalArgumentError("greater должен быть вещественным числом")
         filtered_data = [
             item for item in sorted(data, key=lambda item: item["gdp"], reverse=True)
             if item["gdp"] > threshold
         ]
+
     elif method == "less":
-        threshold = float(value)
+        try:
+            threshold = float(value)
+        except ValueError:
+            raise IllegalArgumentError("less должен быть вещественным числом")
         filtered_data = [
             item for item in sorted(data, key=lambda item: item["gdp"])
             if item["gdp"] < threshold
         ]
-    else:
-        raise ValueError("Неизвестная операция")
 
-    # Сохранение в файл
+    else:
+        raise IllegalArgumentError(
+            "Значение параметра 'criteria' может быть "
+            "одним из:\n"
+            '- "top=X": первые X государств по ВВП на душу населения '
+            '(целое число > 0, по убыванию значения);\n'
+            '- "tail=X": последние X государств по ВВП на душу населения '
+            '(целое число > 0, по возрастанию значения);\n'
+            '- "greater=X": список государств с ВВП на душу населения, больше '
+            'чем X (вещественное число, по убыванию значения);\n'
+            '- "less=X": список государств с ВВП на душу населения, меньше '
+            'чем X (вещественное число, по возрастанию значения).'
+        )
+
     with open(filename, "w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=["name", "gdp"])
         writer.writeheader()
-        for item in filtered_data:
-            writer.writerow({"name": item["name"], "gdp": item["gdp"]})
+        writer.writerows(filtered_data)
 
 
 def FF_Task():
@@ -213,21 +236,26 @@ def FN_Task():
     alphabet_c = "бвгджзклмнпрстфхцчшщ"
 
     name = input("Введите имя файла: ")
-    with open(name, "r") as f:
+    with open(local_path(name), "r") as f:
         content = f.read()
 
-    print(content)
+    print("Стих: \n\n" + content + "\n")
     words = content.split()
+    vow = 0
+    cons = 0
     for x in words:
-        vowel_words = sum(1 for char in x if char in alphabet_v)
-        consonant_words = sum(1 for char in x if char in alphabet_c)
-        print(f"{x}: гласных - {vowel_words}, согласных - {consonant_words}")
+        if x[0].lower() in alphabet_v:
+            vow += 1
+        elif x[0].lower() in alphabet_c:
+            cons += 1
+    print(f"Гласных: {vow}\nСогласных: {cons}")        
+    print("Гласных больше\n") if vow > cons else print("Согласных больше\n") if cons > vow else print("Гласных и согласных поровну\n")
 
 
 def FB_Task():
     filename = input("Введите имя файла: ")
     try:
-        with open(filename, "r", encoding="utf-8") as f:
+        with open(local_path(filename), "r", encoding="utf-8") as f:
             t = f.read().split()
     except FileNotFoundError:
         print("Файл не найден.")
@@ -238,33 +266,24 @@ def FB_Task():
         print("Файл пуст.")
         return
 
-    counts = {}
-    spoiled = 0
-    for token in t:
-        try:
-            num = int(token)
-        except ValueError:
-            spoiled += 1
-            continue
+    parties = ["Партия №1", "Партия №2", "Партия №3", "Партия №4", "Партия №5"]
+    corrupted = sum([int(x) for x in t[4:] if x.isdigit()])
+    votes = sum([int(x) for x in t if x.isdigit()])    
+    parties_votes = [int(x) if x.isdigit() else 0 for x in t[:len(parties)]]
+    party_pairs = list(zip(parties, parties_votes))
 
-        if num == -1:
-            spoiled += 1
-        elif num >= 1:
-            counts[num] = counts.get(num, 0) + 1
-        else:
-            spoiled += 1
+    party_pairs.sort(key=lambda p: p[1], reverse=True)
 
-    results = sorted(counts.items(), key=lambda item: (-item[1], item[0]))
-    for index, (party, votes) in enumerate(results, start=1):
-        percent = votes / total * 100 if total else 0
-        print(f"{index}. Партия №{party} | {votes} | {percent:.2f}%")
-
-    if spoiled > 0:
-        print(f"Испорченных бланков: {spoiled}")
-
+    print(f"Всего бюллетеней: {votes}")
+    
+    w_votes = max(len(str(v)) for _, v in party_pairs)
+    for idx, (name, v) in enumerate(party_pairs, start=1):
+        pct = (v / votes) * 100 if votes else 0
+        print(f"{idx}. {name} | {str(v).rjust(w_votes)} | {pct:6.2f}%")
+    print(f"Испорченных бюллетеней: {corrupted} ({(corrupted / votes) * 100:.2f}%)")
 
 def SF_Task():
-    print("Задача SF: анализ ВВП на душу населения")
+    print("Анализ ВВП на душу населения")
     try:
         filename = input("Введите имя файла: ")
         save_filename = input("Введите имя файла для сохранения: ")
@@ -279,10 +298,10 @@ def SF_Task():
         print(f"Минимум ВВП: {min_country}")
         
         try:
-            rf_data = search(data, criteria="Russian Federation")
-            print(f"Russian Federation: {rf_data}")
+            rf_data = search(data, criteria="Российская Федерация")
+            print(f"Российская Федерация: {rf_data}")
         except NoSuchCountryError:
-            print("Russian Federation не найдена в данных")
+            print("Российская Федерация не найдена в данных")
         
         save_data(save_filename, data, criteria="top=10")
         print(f"Данные сохранены в файл: {save_filename}")
