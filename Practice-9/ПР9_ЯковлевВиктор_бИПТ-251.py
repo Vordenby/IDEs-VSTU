@@ -1,5 +1,11 @@
 import csv
-import json
+import os
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def local_path(filename):
+    return os.path.join(SCRIPT_DIR, filename)
 
 
 class NoSuchCountryError(Exception):
@@ -148,9 +154,10 @@ def save_data(filename, data, criteria):
 
 
 def FF_Task():
+
     def WriteBack(nums):
-        with open("FF_task.txt", "w") as f:
-            f.write(" ".join(map(str, nums)))    
+        with open(local_path("FF_task.txt"), "w", encoding="utf-8") as f:
+            f.write("\n".join(str(num) for num in nums))    
     
     nums = []
     x = 1.0
@@ -163,20 +170,31 @@ def FF_Task():
 
 
 def FS_Task():
-    with open("FS_task.txt", "r") as f:
-        content = f.read()
-        mx = 0
-        sm = 0
-        for num in content.split():
-            mx = max(float(num), mx)
-            sm = sm + float(num)
-    with open("FS_task.txt", "w") as f:
-        f.write(f"{mx}\n{sm}")
+    try:
+        with open(local_path("FF_task.txt"), "r", encoding="utf-8") as f:
+            content = f.read()
+    except FileNotFoundError:
+        print("Ошибка: файл FF_task.txt не найден.")
+        return
+
+    mx = 0
+    sm = 0
+    for num in content.split():
+        mx = max(float(num), mx)
+        sm = sm + float(num)
+
+    with open(local_path("FF_task.txt"), "a", encoding="utf-8") as f:
+        f.write(f"\n{mx}\n{sm}")
 
 
 def FT_Task():
-    with open("FT_task.txt", "r") as f:
-        content = f.read()
+    try:
+        with open(local_path("FF_task.txt"), "r", encoding="utf-8") as f:
+            content = f.read()
+    except FileNotFoundError:
+        print("Ошибка: файл FF_task.txt не найден.")
+        return
+
     values = []
     for t in content.split():
         try:
@@ -186,8 +204,8 @@ def FT_Task():
     mx = max(values) if values else 0
     sm = sum(values)
 
-    with open("FT_task.txt", "w") as f:
-        f.write(f"{mx}\n{sm}")
+    with open(local_path("FF_task.txt"), "a", encoding="utf-8") as f:
+        f.write(f"\n{mx}\n{sm}")
 
 
 def FN_Task():
@@ -254,15 +272,12 @@ def SF_Task():
         data = load_data(filename)
         print(f"Загружено стран с известным ВВП: {len(data)}")
         
-        # Поиск максимума
         max_country = search(data, criteria="-max-")
         print(f"Максимум ВВП: {max_country}")
         
-        # Поиск минимума
         min_country = search(data, criteria="-min-")
         print(f"Минимум ВВП: {min_country}")
         
-        # Поиск по названию
         try:
             rf_data = search(data, criteria="Russian Federation")
             print(f"Russian Federation: {rf_data}")
@@ -283,19 +298,27 @@ def SF_Task():
 
 
 if __name__ == "__main__":
-    choice = input("Выберите задание (1 - FF_Task, 2 - FS_Task, 5 - FB_Task, 9 - SF_Task): ")
-    try:
-        if choice == "1":
-            FF_Task()
-        elif choice == "2":
-            FS_Task()
-        elif choice == "5":
-            FB_Task()
-        elif choice == "9":
-            SF_Task()
-        else:
-            print("Неверный выбор задания.")
-    except FileNotFoundError:
-        print("Ошибка: Файл не найден.")
-    except Exception as err:
-        print(f"Ошибка при выполнении задания: {err}")
+    while True:
+        choice = input("Выберите задание \n1 - Задание 1.1\n2 - Задание 1.2\n3 - Задание 1.3\n4 - Задание 1.4\n5 - Задание 1.5\n6 - Задание 2.1\n0 - Выйти\n\n> ")
+        try:
+            if choice == "1":
+                FF_Task()
+            elif choice == "2":
+                FS_Task()
+            elif choice == "3":
+                FT_Task()
+            elif choice == "4":
+                FN_Task()
+            elif choice == "5":
+                FB_Task()
+            elif choice == "6":
+                SF_Task()
+            elif choice == "0":
+                print("Выход из программы...")
+                break
+            else:
+                print("Неверный выбор задания.")
+        except FileNotFoundError:
+            print("Ошибка: Файл не найден.")
+        except Exception as err:
+            print(f"Ошибка при выполнении задания: {err}")
