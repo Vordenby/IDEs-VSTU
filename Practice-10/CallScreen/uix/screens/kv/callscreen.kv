@@ -1,0 +1,17 @@
+#:import get_color_from_hex kivy.utils.get_color_from_hex
+
+<CallScreen>
+
+    FitImage:
+        id: title_image
+        size_hint_y: .45
+        y: root.height - self.height
+        source: "C:/Users/0rst1/Documents/IDEs-VSTU/Practice-10/CallScreen/data/images/avatar.jpg"
+
+    MDIconButton:
+        icon: "phone"
+        pos: root.width - dp(66), root.height * .45
+        md_bg_color: get_color_from_hex("#00C853")
+        on_release:
+            root.animation_title_image(title_image)
+            root.open_call_box = not root.open_call_box
