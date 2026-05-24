@@ -1,235 +1,180 @@
 #:import dp kivy.metrics.dp
+#:import get_color_from_hex kivy.utils.get_color_from_hex
+#:import colors kivymd.color_definitions.colors
 
-<ActionTile@MDBoxLayout>:
-    icon: ""
-    text: ""
-    orientation: "vertical"
-    size_hint: None, None
-    size: dp(96), dp(116)
-    spacing: dp(8)
-    padding: 0
-    pos_hint: {"center_x": .5, "center_y": .5}
+#:import EffectWidget kivy.uix.effectwidget.EffectWidget
+#:import HorizontalBlurEffect kivy.uix.effectwidget.HorizontalBlurEffect
+#:import VerticalBlurEffect kivy.uix.effectwidget.VerticalBlurEffect
 
-    MDIconButton:
-        icon: root.icon
-        pos_hint: {"center_x": .5}
-        theme_text_color: "Custom"
-        text_color: 1, 1, 1, 1
+#:import FitImage kivymd.uix.fitimage.FitImage
 
-    MDLabel:
-        text: root.text
-        halign: "center"
-        adaptive_height: True
-        theme_text_color: "Custom"
-        text_color: 1, 1, 1, 1
-
-
-<CallButton@MDFloatingActionButton>:
-    elevation: 0
-    md_bg_color: 0, .85, .32, 1
-    icon_color: 1, 1, 1, 1
+#:import IconLeftWidget kivymd.uix.list.IconLeftWidget
+#:import STANDARD_INCREMENT kivymd.material_resources.STANDARD_INCREMENT
 
 
 <CallScreen>:
-    md_bg_color: 0, 0, 0, 1
+    # -------------------------------------------------------------
+    EffectWidget:
+        size_hint: 1, None
+        height: root.height
+        pos: root.pos
+        effects: [ HorizontalBlurEffect(size=root.blur_value), VerticalBlurEffect(size=root.blur_value) ]
 
+        FitImage:
+            id: title_image
+            source: "data/images/avatar.jpg"
+            size_hint_y: .45          # 45 % от высоты экрана
+            y: root.height - self.height
+
+    # -------------------------------------------------------------
+    MDToolbar:
+        pos_hint: {"top": 1}
+        md_bg_color: 0, 0, 0, 0   # прозрачный фон – виден фоновое фото
+        opposite_colors: True
+        title: "Profile"
+        left_action_items: [["menu", lambda x: None]]
+        right_action_items: [["dots-vertical", lambda x: None]]
+
+    # -------------------------------------------------------------
+    MDFloatLayout:
+        id: round_avatar
+        size_hint: None, None
+        size: dp(105), dp(105)
+        pos_hint: {"center_x": .5}
+        y: root.height * 45 / 100 + self.height
+        x: root.center_x - (self.width + user_name.width + dp(20)) / 2
+
+        FitImage:
+            id: avatar_image
+            source: "data/images/round-avatar.jpg"
+            size_hint: None, None
+            size: dp(100), dp(100)
+            mipmap: True
+            radius: [self.height / 2]
+            pos_hint: {"center_x": .5, "center_y": .5}
+
+        MDLabel:
+            id: user_name
+            text: "Irene"
+            font_style: "H3"
+            bold: True
+            size_hint: None, None
+            size: self.texture_size
+            theme_text_color: "Custom"
+            text_color: 1, 1, 1, 1
+            y: round_avatar.y + self.height / 2
+            x: round_avatar.x + round_avatar.width + dp(20)
+
+    # -------------------------------------------------------------
     MDBoxLayout:
+        id: list_box
         orientation: "vertical"
+        size_hint_y: None
+        height: self.minimum_height
+        pos_hint: {"center_x": .5}
+        y: root.height * 45 / 100 - self.height / 2
 
-        MDTopAppBar:
-            title: "Profile"
-            elevation: 0
-            md_bg_color: .05, .05, .05, 1
-            specific_text_color: 1, 1, 1, 1
-            left_action_items: [["menu", lambda x: None]]
-            right_action_items: [["dots-vertical", lambda x: None]]
+        ItemList:
+            icon: "phone"
+            text: "Phone"
+            secondary_text: "123 456 789"
 
-        MDRelativeLayout:
+        ItemList:
+            icon: "mail"
+            text: "Email"
+            secondary_text: "kivydevelopment@gmail.com"
 
-            MDBoxLayout:
-                orientation: "vertical"
-                adaptive_height: True
-                spacing: dp(18)
-                pos_hint: {"center_x": .5}
-                y: root.height * .38
+    # -------------------------------------------------------------
+    MDFloatingActionButton:
+        id: call_fab
+        icon: "phone"
+        md_bg_color: get_color_from_hex(colors["Green"]["A700"])
+        x: root.width - self.width - dp(20)
+        y: Window.height * 45 / 100 + self.height / 2
 
-                MDCard:
-                    size_hint: None, None
-                    size: dp(120), dp(120)
-                    radius: [dp(60)]
-                    elevation: 0
-                    md_bg_color: .12, .12, .12, 1
-                    pos_hint: {"center_x": .5}
+        on_release:
+            root.animation_title_image(title_image)
+            root.animation_blur_value()
+            root.animation_call_button(self)
+            root.animation_list_box(list_box)
+            root.animation_round_avatar(round_avatar, user_name)
+            root.animation_user_name(round_avatar, user_name)
+            root.animation_call_box(call_box, user_name)
+            root.open_call_box = not root.open_call_box
 
-                    MDIcon:
-                        icon: "account"
-                        size_hint: None, None
-                        size: dp(72), dp(72)
-                        pos_hint: {"center_x": .5, "center_y": .5}
-                        theme_text_color: "Custom"
-                        text_color: 1, 1, 1, 1
+    # -------------------------------------------------------------
+    CallBox:
+        id: call_box
+        pos_hint: {"center_x": .5}
+        y: -self.height
+        opacity: 0
 
-                MDLabel:
-                    text: "Denis Krilatkov"
-                    adaptive_height: True
-                    halign: "center"
-                    bold: True
-                    font_style: "H3"
-                    theme_text_color: "Custom"
-                    text_color: 1, 1, 1, 1
 
-            MDBoxLayout:
-                orientation: "vertical"
-                adaptive_height: True
-                spacing: dp(16)
-                padding: dp(0), dp(0), dp(0), dp(20)
-                size_hint_x: .88
-                pos_hint: {"center_x": .5}
-                y: root.height * .06
-                opacity: 1 if not root.open_call_box else 0
+# ==============================================================
 
-                MDCard:
-                    size_hint_y: None
-                    height: dp(74)
-                    radius: [22]
-                    elevation: 0
-                    md_bg_color: .10, .10, .10, .95
-                    padding: dp(20), 0
+<ItemList@TwoLineAvatarListItem>:
+    icon: ""
+    font_style: "Caption"
+    secondary_font_style: "Caption"
+    height: STANDARD_INCREMENT
 
-                    MDBoxLayout:
-                        orientation: "horizontal"
-                        spacing: dp(18)
+    IconLeftWidget:
+        icon: root.icon
 
-                        MDIcon:
-                            icon: "phone"
-                            theme_text_color: "Custom"
-                            text_color: 1, 1, 1, 1
-                            font_size: "26sp"
-                            size_hint_x: None
-                            width: dp(36)
+<CallBoxButton@MDBoxLayout>:
+    orientation: "vertical"
+    adaptive_size: True
+    spacing: dp(8)
+    icon: ""
+    text: ""
 
-                        MDBoxLayout:
-                            orientation: "vertical"
-                            spacing: dp(-2)
+    MDIconButton:
+        icon: root.icon
+        theme_text_color: "Custom"
+        text_color: 1, 1, 1, 1
 
-                            MDLabel:
-                                text: "Phone"
-                                bold: True
-                                font_style: "Subtitle1"
-                                theme_text_color: "Custom"
-                                text_color: 1, 1, 1, 1
+        canvas:
+            Color:
+                rgba: 1, 1, 1, 1
+            Line:
+                width: 1
+                circle: (self.center_x, self.center_y, min(self.width, self.height) / 2, 0, 360)
 
-                            MDLabel:
-                                text: "+7 (999) 777-11-00"
-                                font_style: "Caption"
-                                theme_text_color: "Custom"
-                                text_color: .75, .75, .75, 1
+    MDLabel:
+        text: root.text
+        size_hint_y: None
+        height: self.texture_size[1]
+        font_style: "Caption"
+        halign: "center"
+        theme_text_color: "Custom"
+        text_color: 1, 1, 1, 1
 
-                MDCard:
-                    size_hint_y: None
-                    height: dp(74)
-                    radius: [22]
-                    elevation: 0
-                    md_bg_color: .10, .10, .10, .95
-                    padding: dp(20), 0
+<CallBox@MDGridLayout>:
+    cols: 3
+    rows: 2
+    adaptive_size: True
+    spacing: dp(24)
 
-                    MDBoxLayout:
-                        orientation: "horizontal"
-                        spacing: dp(18)
+    CallBoxButton:
+        icon: "microphone-off"
+        text: "Mute"
 
-                        MDIcon:
-                            icon: "email"
-                            theme_text_color: "Custom"
-                            text_color: 1, 1, 1, 1
-                            font_size: "26sp"
-                            size_hint_x: None
-                            width: dp(36)
+    CallBoxButton:
+        icon: "volume-high"
+        text: "Speaker"
 
-                        MDBoxLayout:
-                            orientation: "vertical"
-                            spacing: dp(-2)
+    CallBoxButton:
+        icon: "dialpad"
+        text: "Keypad"
 
-                            MDLabel:
-                                text: "Email"
-                                bold: True
-                                font_style: "Subtitle1"
-                                theme_text_color: "Custom"
-                                text_color: 1, 1, 1, 1
+    CallBoxButton:
+        icon: "plus-circle"
+        text: "Add call"
 
-                            MDLabel:
-                                text: "krilatkov.denis@gmail.com"
-                                font_style: "Caption"
-                                theme_text_color: "Custom"
-                                text_color: .75, .75, .75, 1
+    CallBoxButton:
+        icon: "call-missed"
+        text: "Transfer"
 
-            CallButton:
-                icon: "phone"
-                pos_hint: {"center_x": .90, "center_y": .50}
-                on_release: root.toggle_call()
-
-            MDCard:
-                id: call_box
-                orientation: "vertical"
-                size_hint: .86, None
-                height: dp(400)
-                pos_hint: {"center_x": .5}
-                y: root.call_box_y
-
-                radius: [28]
-                elevation: 0
-                md_bg_color: .08, .08, .08, 1
-                padding: dp(24)
-                spacing: dp(18)
-
-                MDLabel:
-                    text: "Denis Krilatkov"
-                    adaptive_height: True
-                    halign: "center"
-                    bold: True
-                    font_style: "H3"
-                    theme_text_color: "Custom"
-                    text_color: 1, 1, 1, 1
-
-                MDGridLayout:
-                    cols: 3
-                    rows: 2
-                    spacing: dp(14)
-                    padding: 0
-                    size_hint_x: 1
-                    size_hint_y: None
-                    height: dp(250)
-                    col_default_width: dp(96)
-                    row_default_height: dp(116)
-                    col_force_default: True
-                    row_force_default: True
-                    pos_hint: {"center_x": .5}
-
-                    ActionTile:
-                        icon: "microphone-off"
-                        text: "Mute"
-
-                    ActionTile:
-                        icon: "volume-high"
-                        text: "Speaker"
-
-                    ActionTile:
-                        icon: "dialpad"
-                        text: "Keypad"
-
-                    ActionTile:
-                        icon: "plus"
-                        text: "Add"
-
-                    ActionTile:
-                        icon: "swap-horizontal"
-                        text: "Transfer"
-
-                    ActionTile:
-                        icon: "account"
-                        text: "Contact"
-
-                MDFloatingActionButton:
-                    icon: "phone-hangup"
-                    md_bg_color: 1, 0, 0, 1
-                    pos_hint: {"center_x": .5}
-                    on_release: root.toggle_call()
+    CallBoxButton:
+        icon: "account"
+        text: "Contact"

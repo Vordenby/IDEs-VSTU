@@ -1,18 +1,18 @@
-from kivy.core.window import Window
-from kivymd.app import MDApp
+#!/usr/bin/env python3
+"""Главный файл приложения."""
 
+from kivymd.app import MDApp
 from CallScreen.uix.screens.baseclass.callscreen import CallScreen
 
 
-Window.size = (900, 650)
+class MyCallApp(MDApp):
+    """Класс‑приложение, который просто возвращает корневой экран."""
 
-
-class TestCallScreen(MDApp):
-    def build(self):
-        self.theme_cls.theme_style = "Dark"
-        self.theme_cls.primary_palette = "BlueGray"
+    def build(self) -> CallScreen:
+        # Можно задать тему приложения (по умолчанию – “Blue”)
+        self.theme_cls.primary_palette = "Green"
         return CallScreen()
 
 
 if __name__ == "__main__":
-    TestCallScreen().run()
+    MyCallApp().run()
