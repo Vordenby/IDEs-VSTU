@@ -1,138 +1,66 @@
-import os
+from pathlib import Path
 
 from kivy.animation import Animation
-from kivy.core.window import Window
+from kivy.clock import Clock
 from kivy.lang import Builder
-from kivy.metrics import dp
-from kivy.properties import NumericProperty
-from kivy.utils import get_color_from_hex
-
-from kivymd.color_definitions import colors
-from kivymd.material_resources import STANDARD_INCREMENT
-from kivymd.uix.screen import MDScreen
-
-KV_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(__file__)),
-    "kv",
-    "callscreen.kv",
-)
-
-with open(KV_PATH, encoding="utf-8") as kv_file:
-    Builder.load_string(kv_file.read())
+from kivy.properties import BooleanProperty, NumericProperty
+from kivymd.uix.relativelayout import MDRelativeLayout
 
 
-class CallScreen(MDScreen):
-    blur_value = NumericProperty(0)
+class CallScreen(MDRelativeLayout):
+    open_call_box = BooleanProperty(False)
+    call_box_y = NumericProperty(0)
 
-    open_call_box = False
+    def on_kv_post(self, base_widget):
+        Clock.schedule_once(self._setup_call_box, 0)
 
-    def animation_title_image(self, title_image):
-        if not self.open_call_box:
+    def _setup_call_box(self, *args):
+        box = self.ids.get("call_box")
+        if not box:
+            return
+
+        self.call_box_y = self.height * 0.20
+        box.opacity = 0
+        box.disabled = True
+
+    def toggle_call(self, *args):
+        self.open_call_box = not self.open_call_box
+
+        box = self.ids.get("call_box")
+        if not box:
+            return
+
+        Animation.cancel_all(self, "call_box_y")
+        Animation.cancel_all(box, "opacity")
+
+        if self.open_call_box:
+            box.disabled = False
+
             Animation(
-                size_hint_y=1,
-                d=0.6,
-                t="in_out_quad"
-            ).start(title_image)
-        else:
-            Animation(
-                size_hint_y=0.45,
-                d=0.6,
-                t="in_out_quad"
-            ).start(title_image)
-
-    def animation_blur_value(self):
-        if not self.open_call_box:
-            Animation(
-                blur_value=15,
-                d=0.6,
-                t="in_out_quad"
-            ).start(self)
-        else:
-            Animation(
-                blur_value=0,
-                d=0.6,
-                t="in_out_quad"
+                call_box_y=self.height * 0.28,
+                d=0.25,
+                t="out_quad",
             ).start(self)
 
-    def animation_call_button(self, call_button):
-        if not self.open_call_box:
             Animation(
-                x=self.center_x - call_button.width / 2,
-                y=dp(40),
-                md_bg_color=get_color_from_hex(colors["Red"]["A700"]),
-                d=0.6,
-                t="in_out_quad",
-            ).start(call_button)
-        else:
-            Animation(
-                y=Window.height * 45 / 100 + call_button.height / 2,
-                x=self.width - call_button.width - dp(20),
-                md_bg_color=get_color_from_hex(colors["Green"]["A700"]),
-                d=0.6,
-                t="in_out_quad",
-            ).start(call_button)
-
-    def animation_list_box(self, list_box):
-        if not self.open_call_box:
-            Animation(
-                y=-list_box.y,
-                opacity=0,
-                d=0.6,
-                t="in_out_quad",
-            ).start(list_box)
-        else:
-            Animation(
-                y=self.height * 45 / 100 - list_box.height / 2,
                 opacity=1,
-                d=0.6,
-                t="in_out_quad",
-            ).start(list_box)
-
-    def animation_round_avatar(self, round_avatar, user_name):
-        if not self.open_call_box:
-            Animation(
-                x=self.center_x - round_avatar.width / 2,
-                y=round_avatar.y + dp(50),
-                d=0.6,
-                t="in_out_quad",
-            ).start(round_avatar)
+                d=0.20,
+                t="out_quad",
+            ).start(box)
         else:
             Animation(
-                x=self.center_x -
-                (round_avatar.width + user_name.width + dp(20)) / 2,
-                y=self.height * 45 / 100 + round_avatar.height,
-                d=0.6,
-                t="in_out_quad",
-            ).start(round_avatar)
+                call_box_y=self.height * 0.20,
+                d=0.20,
+                t="in_quad",
+            ).start(self)
 
-    def animation_user_name(self, round_avatar, user_name):
-        if not self.open_call_box:
-            Animation(
-                x=self.center_x - user_name.width / 2,
-                y=user_name.y - STANDARD_INCREMENT,
-                d=0.6,
-                t="in_out_quad",
-            ).start(user_name)
-        else:
-            Animation(
-                x=round_avatar.x + STANDARD_INCREMENT,
-                y=round_avatar.center_y - user_name.height - dp(20),
-                d=0.6,
-                t="in_out_quad",
-            ).start(user_name)
-
-    def animation_call_box(self, call_box, user_name):
-        if not self.open_call_box:
-            Animation(
-                y=user_name.y - call_box.height - dp(100),
-                opacity=1,
-                d=0.6,
-                t="in_out_quad",
-            ).start(call_box)
-        else:
-            Animation(
-                y=-call_box.height,
+            fade = Animation(
                 opacity=0,
-                d=0.6,
-                t="in_out_quad",
-            ).start(call_box)
+                d=0.15,
+                t="in_quad",
+            )
+            fade.bind(on_complete=lambda *_: setattr(box, "disabled", True))
+            fade.start(box)
+
+
+Builder.load_file("/Users/vordenby/Documents/IDEs-VSTU/Practice-10/CallScreen/uix/screens/kv/callscreen.kv")
