@@ -1,16 +1,63 @@
 #:import get_color_from_hex kivy.utils.get_color_from_hex
+#:import dp kivy.metrics.dp
+
+<ItemList@BoxLayout>
+    orientation: "horizontal"
+    size_hint_y: None
+    height: dp(72)
+    padding: dp(8)
+    spacing: dp(8)
+
+    BoxLayout:
+        size_hint_x: None
+        width: dp(56)
+        MDIcon:
+            icon: root.icon
+            halign: "center"
+            valign: "middle"
+
+    BoxLayout:
+        orientation: "vertical"
+        MDLabel:
+            text: root.text
+            font_style: "Subtitle1"
+            size_hint_y: None
+            height: self.texture_size[1]
+        MDLabel:
+            text: root.secondary_text
+            font_style: "Caption"
+            size_hint_y: None
+            height: self.texture_size[1]
 
 <CallScreen>
 
-    FitImage:
-        id: title_image
-        size_hint_y: .45
-        y: root.height - self.height
-        source: "C:/Users/0rst1/Documents/IDEs-VSTU/Practice-10/CallScreen/data/images/avatar.jpg"
+    EffectWidget:
+
+        FitImage:
+            id: title_image
+            size_hint_y: .45
+            y: root.height - self.height
+            source: "C:/Users/0rst1/Documents/IDEs-VSTU/Practice-10/CallScreen/data/images/avatar.jpg"
+
+    MDBoxLayout:
+        id: list_box
+        orientation: "vertical"
+        adaptive_height: True
+        y: root.height * 0.45 - self.height / 2
+
+        ItemList:
+            icon: "phone"
+            text: "Phone"
+            secondary_text: "123 456 789"
+
+        ItemList:
+            icon: "mail"
+            text: "Email"
+            secondary_text: "kivydevelopment@gmail.com"
 
     MDIconButton:
         icon: "phone"
-        pos: root.width - dp(66), root.height * .45
+        pos: root.width - dp(66), root.height * 0.45
         md_bg_color: get_color_from_hex("#00C853")
         on_release:
             root.animation_title_image(title_image)
