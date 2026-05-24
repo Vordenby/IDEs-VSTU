@@ -1,6 +1,6 @@
 from kivymd.app import MDApp
 
-from uix.screens.baseclass.callscreen import CallScreen
+from CallScreen.uix.screens.baseclass.callscreen import CallScreen
 
 
 class TestCallScreen(MDApp):
